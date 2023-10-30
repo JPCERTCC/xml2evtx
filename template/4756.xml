@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Event
+    xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+        <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{{54849625-5478-4994-A5BA-3E3B0328C30D}}" />
+        <EventID>4756</EventID>
+        <Version>0</Version>
+        <Level>0</Level>
+        <Task>13824</Task>
+        <Opcode>0</Opcode>
+        <Keywords>0x8020000000000000</Keywords>
+        <TimeCreated SystemTime="{date}Z" /> 
+        <EventRecordID>{event_record_id}</EventRecordID>
+        <Correlation ActivityID="{{00D66690-1CDF-0000-AC66-D600DF1CD101}}"/> 
+        <Execution ProcessID="{processid}" ThreadID="{threadid}"/>
+        <Channel>Security</Channel>
+        <Computer>{hostname}</Computer>
+        <Security />
+    </System>
+    <EventData>
+        <Data Name="SubjectUserSid">S-1-5-21-1234567890-1234567890-1234567890-1234</Data>
+        <Data Name="SubjectUserName">{hostname}$</Data>
+        <Data Name="SubjectDomainName">{domainname}</Data>
+        <Data Name="SubjectLogonId">0x3e4</Data>
+        <Data Name="TargetUserName">{username}</Data>
+        <Data Name="TargetDomainName">{domainname}</Data>
+        <Data Name="TargetUserSid">S-1-5-21-1234567890-1234567890-1234567890-5678</Data>
+        <Data Name="GroupName">Group1</Data>
+        <Data Name="GroupDomainName">{domainname}</Data>
+        <Data Name="GroupSid">S-1-5-21-1234567890-1234567890-1234567890-9012</Data>
+        <Data Name="PrivilegeList">-</Data>
+    </EventData>
+</Event>

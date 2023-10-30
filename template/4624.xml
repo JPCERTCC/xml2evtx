@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Event
+    xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+        <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{{54849625-5478-4994-A5BA-3E3B0328C30D}}"/>
+        <EventID>4624</EventID>
+        <Version>0</Version>
+        <Level>0</Level>
+        <Task>12544</Task>
+        <Opcode>0</Opcode>
+        <Keywords>0x8010000000000000</Keywords>
+        <TimeCreated SystemTime="{date}Z"/>
+        <EventRecordID>{event_record_id}</EventRecordID>
+        <Correlation ActivityID="{{00D66690-1CDF-0000-AC66-D600DF1CD101}}"/> 
+        <Execution ProcessID="{processid}" ThreadID="{threadid}"/>
+        <Channel>Security</Channel>
+        <Computer>{hostname}</Computer>
+        <Security/>
+    </System>
+    <EventData>
+        <Data Name="SubjectUserSid">S-1-5-18</Data>
+        <Data Name="SubjectUserName">{hostname}$</Data>
+        <Data Name="SubjectDomainName">{domainname}</Data>
+        <Data Name="SubjectLogonId">0x3e4</Data>
+        <Data Name="TargetUserSid">S-1-5-21-1377283216-344919071-3415362939-500</Data>
+        <Data Name="TargetUserName">{username}</Data>
+        <Data Name="TargetDomainName">{domainname}</Data>
+        <Data Name="TargetLogonId">0x0</Data>
+        <Data Name="LogonType">{logontype}</Data>
+        <Data Name="LogonProcessName">User32</Data>
+        <Data Name="AuthenticationPackageName">Negotiate</Data>
+        <Data Name="WorkstationName">{hostname}</Data>
+        <Data Name="LogonGuid">{{00000000-0000-0000-0000-000000000000}}</Data>
+        <Data Name="TransmittedServices">-</Data>
+        <Data Name="LmPackageName">-</Data>
+        <Data Name="KeyLength">0</Data>
+        <Data Name="ProcessId">{processid}</Data>
+        <Data Name="ProcessName">C:\\Windows\\System32\\svchost.exe</Data>
+        <Data Name="IpAddress">{ipaddress}</Data>
+        <Data Name="IpPort">{port}</Data>
+    </EventData>
+</Event>

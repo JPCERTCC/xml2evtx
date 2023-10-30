@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Event
+    xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+        <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{{54849625-5478-4994-A5BA-3E3B0328C30D}}" /> 
+        <EventID>4719</EventID> 
+        <Version>0</Version> 
+        <Level>0</Level> 
+        <Task>13568</Task> 
+        <Opcode>0</Opcode> 
+        <Keywords>0x8020000000000000</Keywords> 
+        <TimeCreated SystemTime="{date}Z" /> 
+        <EventRecordID>{event_record_id}</EventRecordID> 
+        <Correlation ActivityID="{{00D66690-1CDF-0000-AC66-D600DF1CD101}}"/> 
+        <Execution ProcessID="{processid}" ThreadID="{threadid}"/>
+        <Channel>Security</Channel> 
+        <Computer>{hostname}</Computer> 
+        <Security /> 
+    </System>
+    <EventData>
+        <Data Name="SubjectUserSid">S-1-5-18</Data> 
+        <Data Name="SubjectUserName">{username}</Data> 
+        <Data Name="SubjectDomainName">{domainname}</Data> 
+        <Data Name="SubjectLogonId">0x3e4</Data> 
+        <Data Name="CategoryId">%%8274</Data> 
+        <Data Name="SubcategoryId">%%12807</Data> 
+        <Data Name="SubcategoryGuid">{{0CCE9223-69AE-11D9-BED3-505054503030}}</Data> 
+        <Data Name="AuditPolicyChanges">%%8448, %%8450</Data> 
+    </EventData>
+</Event>

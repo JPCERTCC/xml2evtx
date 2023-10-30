@@ -1,0 +1,44 @@
+name: Test xml2evtx
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+      - 'xml2evtx.py'
+      - '.github/workflows/test.yml'
+      - 'template/**'
+
+jobs:
+
+  check:
+
+    strategy:
+      matrix:
+        python: [3.9]
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup
+      run: |
+        pip3 install -r requirements.txt
+        curl  -L -O  https://github.com/omerbenamram/evtx/releases/download/v0.8.1/evtx_dump-v0.8.1-x86_64-unknown-linux-gnu
+        mv evtx_dump-v0.8.1-x86_64-unknown-linux-gnu evtx_dump
+        chmod 755 evtx_dump
+
+    - name: Create test event log xml file
+      run: |
+        python3 create_eventlog.py -c 10
+
+    - name: Convert event log xml to evtx
+      run: |
+        python3 xml2evtx.py -t
+        python3 xml2evtx.py -x sample.xml
+
+    - name: Parse test evtx
+      run: |
+        ./evtx_dump -vvv test.evtx
+        ./evtx_dump -vvv sample.xml.evtx

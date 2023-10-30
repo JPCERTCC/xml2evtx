@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Event
+    xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+        <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{{54849625-5478-4994-A5BA-3E3B0328C30D}}" /> 
+        <EventID>5137</EventID> 
+        <Version>0</Version> 
+        <Level>0</Level> 
+        <Task>14081</Task> 
+        <Opcode>0</Opcode> 
+        <Keywords>0x8020000000000000</Keywords> 
+        <TimeCreated SystemTime="{date}Z" /> 
+        <EventRecordID>{event_record_id}</EventRecordID> 
+        <Correlation ActivityID="{{00D66690-1CDF-0000-AC66-D600DF1CD101}}"/> 
+        <Execution ProcessID="{processid}" ThreadID="{threadid}"/>
+        <Channel>Security</Channel> 
+        <Computer>{hostname}</Computer> 
+        <Security /> 
+    </System>
+    <EventData>
+        <Data Name="OpCorrelationID">{{4EAD68FF-7229-42A4-8C73-AAB57169858B}}</Data> 
+        <Data Name="AppCorrelationID">-</Data> 
+        <Data Name="SubjectUserSid">S-1-5-21-3457937927-2839227994-823803824-1104</Data> 
+        <Data Name="SubjectUserName">{username}</Data> 
+        <Data Name="SubjectDomainName">{domainname}</Data> 
+        <Data Name="SubjectLogonId">0x3e4</Data> 
+        <Data Name="DSName">contoso.local</Data> 
+        <Data Name="DSType">%%14676</Data> 
+        <Data Name="ObjectDN">cn=Win2000,CN=Users,DC=contoso,DC=local</Data> 
+        <Data Name="ObjectGUID">{{41D5F7AF-64A2-4985-9A4B-70DAAFC7CCE6}}</Data> 
+        <Data Name="ObjectClass">computer</Data> 
+    </EventData>
+</Event>

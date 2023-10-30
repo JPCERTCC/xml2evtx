@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Event
+    xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+        <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{{54849625-5478-4994-A5BA-3E3B0328C30D}}" /> 
+        <EventID>4768</EventID> 
+        <Version>0</Version> 
+        <Level>0</Level> 
+        <Task>14339</Task> 
+        <Opcode>0</Opcode> 
+        <Keywords>0x8020000000000000</Keywords> 
+        <TimeCreated SystemTime="{date}Z" /> 
+        <EventRecordID>{event_record_id}</EventRecordID> 
+        <Correlation ActivityID="{{00D66690-1CDF-0000-AC66-D600DF1CD101}}"/> 
+        <Execution ProcessID="{processid}" ThreadID="{threadid}"/>
+        <Channel>Security</Channel> 
+        <Computer>{hostname}</Computer> 
+        <Security /> 
+    </System>
+    <EventData>
+        <Data Name="TargetUserName">{username}</Data> 
+        <Data Name="TargetDomainName">{domainname}</Data> 
+        <Data Name="TargetSid">S-1-5-21-3457937927-2839227994-823803824-1104</Data> 
+        <Data Name="ServiceName">krbtgt</Data> 
+        <Data Name="ServiceSid">S-1-5-21-3457937927-2839227994-823803824-502</Data> 
+        <Data Name="TicketOptions">0x40810010</Data> 
+        <Data Name="Status">0x0</Data> 
+        <Data Name="TicketEncryptionType">0x12</Data> 
+        <Data Name="PreAuthType">15</Data> 
+        <Data Name="IpAddress">{ipaddress}</Data> 
+        <Data Name="IpPort">{port}</Data> 
+        <Data Name="CertIssuerName">contoso-DC01-CA-1</Data> 
+        <Data Name="CertSerialNumber">1D0000000D292FBE3C6CDDAFA200020000000D</Data> 
+        <Data Name="CertThumbprint">564DFAEE99C71D62ABC553E695BD8DBC46669413</Data> 
+    </EventData>
+</Event>
