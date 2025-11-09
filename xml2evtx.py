@@ -20,7 +20,12 @@ try:
     from lxml import etree
     has_lxml = True
 except ImportError:
+    # fall back to the stdlib ElementTree if lxml is not installed
+    import xml.etree.ElementTree as etree
     has_lxml = False
+
+# XML parse error alias for both lxml and ElementTree
+PARSE_ERROR = getattr(etree, 'XMLSyntaxError', getattr(etree, 'ParseError', Exception))
 
 # Test Event Log
 TEST_EVENTLOG = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
@@ -256,19 +261,19 @@ logger = setup_logger(__name__)
 
 
 def to_wordpack(str_name):
-    data = b""
-    for letter in str_name:
-        data += pack("B", ord(letter))
-        data += pack("B", 0)
-
-    return data
+    return str_name.encode("utf-16-le")
 
 
 def to_lxml(record_xml):
     fin_xml = record_xml.encode("utf-8")
-    parser = etree.XMLParser(resolve_entities=False)
-    
-    return etree.fromstring(fin_xml, parser)
+    # Use lxml when available (allows disabling entity resolution),
+    # otherwise use the stdlib ElementTree parser.
+    if has_lxml:
+        parser = etree.XMLParser(resolve_entities=False)
+        return etree.fromstring(fin_xml, parser)
+    else:
+        # xml.etree.ElementTree.XMLParser does not support resolve_entities
+        return etree.fromstring(fin_xml)
 
 
 def xml_records(filename):
@@ -284,7 +289,7 @@ def xml_records(filename):
             if xml.strip().startswith("<System>"):
                 try:
                     yield to_lxml("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?><Event>" + xml), None
-                except etree.XMLSyntaxError as e:
+                except PARSE_ERROR as e:
                     yield xml, e
 
 
@@ -296,7 +301,7 @@ def load_test_data(data):
         if xml.strip().startswith("<System>"):
             try:
                 yield to_lxml("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?><Event>" + xml), None
-            except etree.XMLSyntaxError as e:
+            except PARSE_ERROR as e:
                 yield xml, e
 
 
@@ -573,13 +578,15 @@ def create_evtx(data: bytes, event_count: int, chunk_count: int) -> bytes:
     return evtx_header + data
 
 
-def create_evtx_chunk(data: bytes, event_count: int) -> bytes:
+def create_evtx_chunk(data: bytes, event_count: int, first_event_id: int, last_event_id: int) -> bytes:
     """
     Create a chunk header for the Evtx file.
 
     Args:
         data (bytes): The event data to be included in the chunk.
         event_count (int): The count of events to be included in the chunk.
+        first_event_id (int): The identifier of the first event in the chunk.
+        last_event_id (int): The identifier of the last event in the chunk.
 
     Returns:
         bytes: The chunk header and event data as bytes.
@@ -589,15 +596,18 @@ def create_evtx_chunk(data: bytes, event_count: int) -> bytes:
     evtx_chunk_header = b""
 
     # Set last_event_record_number and free_space_offset
-    last_event_record_number = START_EVENT_RECORD_ID + event_count - 1
     free_space_offset = len(data) + 0x0200 # Junk data offset from 0x1000
 
     for key, value in EVTX_CHUNK_HEADER.items():
         format_specifier, data_value = value
-        if key == "last_event_record_number":
-            data_value = event_count
+        if key == "first_event_record_number":
+            data_value = first_event_id
+        elif key == "last_event_record_number":
+            data_value = last_event_id
+        elif key == "first_event_record_identifier":
+            data_value = first_event_id
         elif key == "last_event_record_identifier":
-            data_value = last_event_record_number
+            data_value = last_event_id
         elif key == "free_space_offset":
             data_value = free_space_offset
         elif key == "event_records_checksum":
@@ -615,21 +625,23 @@ def create_evtx_chunk(data: bytes, event_count: int) -> bytes:
     return evtx_chunk + data
 
 
-def create_chunk(binxml: bytes, total_event_count: int, total_chunk_count: int) -> bytearray:
+def create_chunk(binxml: bytes, chunk_event_count: int, total_chunk_count: int, chunk_first_event_id: int, chunk_last_event_id: int) -> bytearray:
     """
     Create a chunk for the Evtx file.
 
     Args:
         binxml (bytes): The binary data of an event record.
-        total_event_count (int): The total event count.
+        chunk_event_count (int): The event count in this chunk.
         total_chunk_count (int): The total chunk count.
+        chunk_first_event_id (int): The identifier of the first event in this chunk.
+        chunk_last_event_id (int): The identifier of the last event in this chunk.
 
     Returns:
         bytearray: The binary data of a chunk.
     """
 
     binxml_array = fix_binxml_offset(binxml)
-    evtx_chunk_part = create_evtx_chunk(binxml_array, total_event_count)
+    evtx_chunk_part = create_evtx_chunk(binxml_array, chunk_event_count, chunk_first_event_id, chunk_last_event_id)
 
     set_blank_len = MAX_CHUNK_SIZE - len(evtx_chunk_part)
     logger.debug(f"blank size is {set_blank_len}.")
@@ -646,10 +658,10 @@ def create_chunk(binxml: bytes, total_event_count: int, total_chunk_count: int) 
     for i in range(4):
         evtx_chunk_array[0x2c + i] = offset[i]
 
-    # replace event_records_checksum
-    evtx_chunk_hash = pack("I", zlib.crc32(evtx_chunk_array[:120] + evtx_chunk_array[128:512]))
+    # replace chunk checksum
+    chunk_checksum = pack("I", zlib.crc32(evtx_chunk_array[:120] + evtx_chunk_array[128:512]))
     for i in range(4):
-        evtx_chunk_array[124 + i] = evtx_chunk_hash[i]
+        evtx_chunk_array[124 + i] = chunk_checksum[i]
 
     return evtx_chunk_array
 
@@ -736,6 +748,8 @@ def process_xml_file(xml_file: str) -> tuple:
 
     total_chunk_count = 0
     total_event_count = 0
+    chunk_event_count = 0
+    chunk_first_event_id = 1
     binxml = b""
     evtx_chunk = b""
     for node, err in xml_records(xml_file):
@@ -743,17 +757,22 @@ def process_xml_file(xml_file: str) -> tuple:
             logger.error(err)
             continue
         total_event_count += 1
+        chunk_event_count += 1
         logger.debug(f"load event log {total_event_count}")
         part_of_binxml = convert_xml_to_binxml(node, total_event_count) # Convert XML to BinXML
         if len(binxml + part_of_binxml) > MAX_CHUNK_SIZE - 0x200: # with out chunk header size 0x200
-            evtx_chunk += create_chunk(binxml, total_event_count, total_chunk_count)
+            chunk_last_event_id = total_event_count - 1
+            evtx_chunk += create_chunk(binxml, chunk_event_count, total_chunk_count, chunk_first_event_id, chunk_last_event_id)
 
             binxml = part_of_binxml
             total_chunk_count += 1
+            chunk_event_count = 1
+            chunk_first_event_id = total_event_count
         else:
             binxml += part_of_binxml
 
-    evtx_chunk += create_chunk(binxml, total_event_count, total_chunk_count)
+    chunk_last_event_id = total_event_count
+    evtx_chunk += create_chunk(binxml, chunk_event_count, total_chunk_count, chunk_first_event_id, chunk_last_event_id)
 
     return total_event_count, total_chunk_count, evtx_chunk
 
