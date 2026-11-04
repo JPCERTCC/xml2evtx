@@ -634,7 +634,7 @@ def create_chunk(binxml: bytes, total_event_count: int, total_chunk_count: int) 
     set_blank_len = MAX_CHUNK_SIZE - len(evtx_chunk_part)
     logger.debug(f"blank size is {set_blank_len}.")
     evtx_chunk_part += pack("{}s".format(set_blank_len), b'\00')
-    logger.info(f"finised chank {total_chunk_count}.")
+    logger.info(f"finished chunk {total_chunk_count}.")
 
     # replace last_event_record_offset
     evtx_chunk_array = bytearray(evtx_chunk_part)
